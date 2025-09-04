@@ -1,21 +1,18 @@
 const mongoose = require('mongoose');
 
-// Schema นี้ออกแบบมาเพื่อเก็บข้อมูลดิบจากไฟล์ Excel ที่อัปโหลด
-// เพื่อนำไปใช้ในการคำนวณและแสดงผลบน Dashboard
+// แก้ไข "แบบแปลน" ให้ถูกต้องและสอดคล้องกับการใช้งานจริง
 const weighbridgeDataSchema = new mongoose.Schema({
-    // เราจะเก็บข้อมูลเท่าที่จำเป็นสำหรับการคำนวณและการแสดงผล
-    weighbridgeTransactionId: { type: String, unique: true, sparse: true }, // ID จากระบบชั่งน้ำหนัก
-    weighType: { type: String, required: true, index: true }, // ประเภทชั่ง (BUY/SELL)
-    productType: { type: String, required: true }, // ประเภทสินค้า (หิน, ยาง)
-    productName: { type: String, required: true, index: true }, // สินค้า (หินฝุ่น, หิน 3/4")
-    netWeight: { type: Number, required: true }, // น้ำหนักสุทธิ
-    companyName: { type: String, required: true, index: true }, // ชื่อบริษัท
-    timestamp: { type: Date, required: true, index: true }, // วันเวลาที่ทำรายการ
-    uploadSessionId: { type: String, required: true, index: true }, // ID ของการอัปโหลดแต่ละครั้ง
-}, {
-    timestamps: true // เพิ่ม createdAt และ updatedAt อัตโนมัติ
+    uploadSessionId: { type: String, required: true, index: true },
+    transactionDate: { type: Date, required: true, index: true }, // เปลี่ยนจาก timestamp เป็น transactionDate เพื่อความชัดเจน
+    
+    companyName: { type: String, required: true, index: true },
+    productType: { type: String, required: true }, // e.g., 'หิน', 'ยาง'
+    productName: { type: String, required: true }, // e.g., 'หินฝุ่น', 'ยาง AC-60/70'
+    weighType: { type: String, required: true, enum: ['BUY', 'SELL'] },
+    netWeight: { type: Number, required: true },
 });
 
 const WeighbridgeData = mongoose.model('WeighbridgeData', weighbridgeDataSchema);
 
 module.exports = WeighbridgeData;
+

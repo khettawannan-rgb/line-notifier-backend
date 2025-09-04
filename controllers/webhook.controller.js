@@ -54,7 +54,7 @@ const handleMessageEvent = async (event) => {
             tomorrow.setDate(tomorrow.getDate() + 1); // วันพรุ่งนี้ตอนเที่ยงคืน
 
             const dailyData = await WeighbridgeData.find({
-                companyId: config.companyId,
+                companyName: config.companyId,
                 transactionDate: {
                     $gte: today,
                     $lt: tomorrow
@@ -78,10 +78,10 @@ const handleMessageEvent = async (event) => {
             dailyData.forEach(item => {
                 if (item.weighType === 'BUY') {
                     buyTotal += item.netWeight;
-                    buyItems[item.product] = (buyItems[item.product] || 0) + item.netWeight;
+                    buyItems[item.productName] = (buyItems[item.productName] || 0) + item.netWeight;
                 } else if (item.weighType === 'SELL') {
                     sellTotal += item.netWeight;
-                    sellItems[item.product] = (sellItems[item.product] || 0) + item.netWeight;
+                    sellItems[item.productName] = (sellItems[item.productName] || 0) + item.netWeight;
                 }
             });
             

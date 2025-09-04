@@ -57,14 +57,29 @@ const handleFileUpload = async (req, res) => {
     try {
         const { allData, mixData } = req.body.fileData;
 
-        // 1. Process Mix sheet to create/update company configurations
+        // ฟังก์ชันช่วยแปลงวันที่จากรูปแบบไทยใน Excel
+        const parseThaiDate = (thaiDateStr) => {
+            if (!thaiDateStr) return new Date();
+            const parts = thaiDateStr.match(/(\d{2})\/(\d{2})\/(\d{4}), (\d{2}):(\d{2})/);
+            if (!parts) return new Date();
+            
+            const day = parseInt(parts[1], 10);
+            const month = parseInt(parts[2], 10) - 1; // เดือนใน JS เริ่มจาก 0
+            const year = parseInt(parts[3], 10) - 543; // แปลง พ.ศ. เป็น ค.ศ.
+            const hour = parseInt(parts[4], 10);
+            const minute = parseInt(parts[5], 10);
+            
+            return new Date(year, month, day, hour, minute);
+        };
+
+        // 1. ประมวลผลชีท Mix
         let companiesProcessed = 0;
         for (const row of mixData) {
             const companyId = row.companyId;
             if (companyId) {
                 await NotificationConfig.findOneAndUpdate(
                     { companyId: companyId },
-                    { companyId: companyId }, // ensures the doc has this field
+                    { companyId: companyId },
                     { upsert: true, new: true, setDefaultsOnInsert: true }
                 );
                 companiesProcessed++;
@@ -72,17 +87,20 @@ const handleFileUpload = async (req, res) => {
         }
         logger.info(`[Upload-${uploadId}] Processed ${companiesProcessed} companies from Mix sheet.`);
 
-        // 2. Process All_data sheet to save data for dashboard and reports
+        // 2. ประมวลผลชีท All_data
         let dataRowsSaved = 0;
         for (const row of allData) {
             const weighType = row['ประเภทชั่ง'];
             if (weighType === 'BUY' || weighType === 'SELL') {
+                // สร้างข้อมูลให้ตรงกับ "แบบแปลน" (Schema)
                 const dataEntry = new WeighbridgeData({
-                    companyId: row['ชื่อบริษัท'],
-                    product: row['สินค้า'],
+                    uploadSessionId: uploadId,
+                    transactionDate: parseThaiDate(row['วัน/เวลา ออก']),
+                    companyName: row['ชื่อบริษัท'],
+                    productType: row['ประเภทสินค้า'],
+                    productName: row['สินค้า'],
                     weighType: weighType,
                     netWeight: row['น้ำหนักสุทธิ final'],
-                    transactionDate: new Date() // Or parse from Excel if available
                 });
                 await dataEntry.save();
                 dataRowsSaved++;
@@ -102,19 +120,18 @@ const handleFileUpload = async (req, res) => {
     }
 };
 
-
 const getDashboardSummary = async (req, res) => {
     try {
         const buySummary = await WeighbridgeData.aggregate([
             { $match: { weighType: 'BUY' } },
-            { $group: { _id: "$product", totalWeight: { $sum: "$netWeight" } } },
+            { $group: { _id: "$productName", totalWeight: { $sum: "$netWeight" } } },
             { $sort: { totalWeight: -1 } },
             { $project: { product: "$_id", totalWeight: 1, _id: 0 } }
         ]);
 
         const sellSummary = await WeighbridgeData.aggregate([
             { $match: { weighType: 'SELL' } },
-            { $group: { _id: "$product", totalWeight: { $sum: "$netWeight" } } },
+            { $group: { _id: "$productName", totalWeight: { $sum: "$netWeight" } } },
             { $sort: { totalWeight: -1 } },
             { $project: { product: "$_id", totalWeight: 1, _id: 0 } }
         ]);
@@ -125,7 +142,6 @@ const getDashboardSummary = async (req, res) => {
         res.status(500).json({ message: 'Server Error' });
     }
 };
-
 
 module.exports = {
     getUsers,
