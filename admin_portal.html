@@ -176,11 +176,43 @@
       // --- HELPERS ---
       const getApiBaseUrl = () => apiUrlInput.value.trim().replace(/\/+$/, '');
       const joinUrl = (base, path) => `${base}${path.startsWith('/') ? '' : '/'}${path}`;
-      function showToast(message, type = 'success', duration = 3000) { /* ... */ }
-      function setConnectionStatus(status, text) { /* ... */ }
+      function showToast(message, type = 'success', duration = 3000) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.className = `toast show ${type}`;
+        setTimeout(() => toast.classList.remove('show'), duration);
+      }
+      function setConnectionStatus(status, text) {
+          connectionStatus.textContent = text;
+          if (status === 'ok') {
+              connectionStatus.className = 'px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800';
+          } else if (status === 'error') {
+              connectionStatus.className = 'px-3 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800';
+          } else {
+              connectionStatus.className = 'px-3 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800';
+          }
+      }
       
       async function apiCall(url, options = {}) {
-        // ... (same as previous version)
+        try {
+          const response = await fetch(url, { ...options, mode: 'cors' });
+          if (!response.ok) {
+            let errorMsg = `HTTP error! status: ${response.status}`;
+            try {
+              const errorData = await response.json();
+              errorMsg = errorData.message || JSON.stringify(errorData);
+            } catch (e) {
+              errorMsg = response.statusText;
+            }
+            throw new Error(errorMsg);
+          }
+          if (response.status === 204) return null;
+          return response.json();
+        } catch (error) {
+          console.error('API Call failed:', error);
+          showToast(`Error: ${error.message}`, 'error', 5000);
+          throw error;
+        }
       }
 
       // --- API ENDPOINTS ---
@@ -201,7 +233,26 @@
       const pingHealth = () => apiCall(joinUrl(getApiBaseUrl(), '/api/health'));
 
       // --- RENDER FUNCTIONS ---
-      function renderUsers(users = []) { /* ... */ }
+      function renderUsers(users = []) {
+        userListEl.innerHTML = '';
+        if (users.length === 0) {
+          userListEl.innerHTML = `<p class="text-sm text-gray-500">No users have added the LINE OA yet.</p>`;
+          return;
+        }
+        users.forEach(user => {
+          const userCard = `
+            <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <p class="font-semibold text-gray-800">${user.displayName}</p>
+              <div class="flex items-center justify-between mt-1">
+                 <p class="text-xs text-gray-500 break-all">${user.userId}</p>
+                 <button class="copy-uid-btn ml-2 text-indigo-500 hover:text-indigo-700" data-uid="${user.userId}" title="Copy ID">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/></svg>
+                 </button>
+              </div>
+            </div>`;
+          userListEl.insertAdjacentHTML('beforeend', userCard);
+        });
+      }
 
       function renderConfigs(configs = []) {
         configListEl.innerHTML = '';
@@ -228,15 +279,76 @@
         });
       }
       
-      function renderLogs(logs = []) { /* ... */ }
-      function renderDashboard(summary = {}) { /* ... */ }
+      function renderLogs(logs = []) {
+          logListEl.innerHTML = '';
+          if (logs.length === 0) {
+              logListEl.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-sm text-gray-500">No activity recorded yet.</td></tr>`;
+              return;
+          }
+          const statusColors = {
+              success: 'bg-green-100 text-green-800',
+              error: 'bg-red-100 text-red-800',
+              skipped: 'bg-yellow-100 text-yellow-800',
+              pending: 'bg-gray-100 text-gray-800'
+          };
+          logs.forEach(log => {
+              const row = `
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date(log.timestamp).toLocaleString()}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColors[log.status] || statusColors.pending}">
+                            ${log.status}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-700">${log.message}</td>
+                </tr>
+              `;
+              logListEl.insertAdjacentHTML('beforeend', row);
+          });
+      }
+
+      function renderDashboard(summary = {}) {
+          const { buySummary = [], sellSummary = [] } = summary;
+          buySummaryEl.innerHTML = '';
+          sellSummaryEl.innerHTML = '';
+
+          if (buySummary.length === 0) {
+              buySummaryEl.innerHTML = `<p class="text-sm text-gray-500">No BUY data available.</p>`;
+          } else {
+              buySummary.forEach(item => {
+                  const weightInTonnes = item.totalWeight / 1000;
+                  const itemEl = `
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="text-gray-700">${item.product}</span>
+                        <span class="font-semibold">${weightInTonnes.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ตัน</span>
+                    </div>`;
+                  buySummaryEl.insertAdjacentHTML('beforeend', itemEl);
+              });
+          }
+
+          if (sellSummary.length === 0) {
+              sellSummaryEl.innerHTML = `<p class="text-sm text-gray-500">No SELL data available.</p>`;
+          } else {
+              sellSummary.forEach(item => {
+                  const weightInTonnes = item.totalWeight / 1000;
+                  const itemEl = `
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="text-gray-700">${item.product}</span>
+                        <span class="font-semibold">${weightInTonnes.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ตัน</span>
+                    </div>`;
+                  sellSummaryEl.insertAdjacentHTML('beforeend', itemEl);
+              });
+          }
+      }
 
       // --- PAGE NAVIGATION ---
       function switchPage(pageId) {
           pageContents.forEach(page => page.classList.add('hidden'));
           document.getElementById(pageId).classList.remove('hidden');
+
           navButtons.forEach(btn => btn.classList.remove('active'));
           document.querySelector(`.nav-btn[data-page="${pageId}"]`).classList.add('active');
+          
           if (pageId === 'log-page') fetchLogs().then(renderLogs);
           if (pageId === 'dashboard-page') fetchDashboardSummary().then(renderDashboard);
           if (pageId === 'configs-page') {
@@ -256,12 +368,16 @@
           configForm.companyId.value = config.companyId;
           configForm.uuids.value = (config.uuids || []).join('\n');
         } else {
-          return; // Should not be able to add new configs manually
+          return;
         }
         modal.classList.add('show');
         modalBackdrop.classList.add('show');
       }
-      function closeModal() { /* ... */ }
+
+      function closeModal() {
+        modal.classList.remove('show');
+        modalBackdrop.classList.remove('show');
+      }
 
       // --- EVENT HANDLERS ---
       async function handleFormSubmit(e) {
@@ -270,19 +386,30 @@
         const payload = {
           uuids: configForm.uuids.value.split('\n').map(s => s.trim()).filter(Boolean),
         };
+
         try {
           await updateConfig(id, payload);
           showToast('Configuration updated successfully!');
           closeModal();
-          initializeApp(false); // Re-init without full reload
+          // Refresh only the config page data
+          fetchConfigs().then(renderConfigs);
         } catch (error) { /* Toast is already shown in apiCall */ }
       }
       
-      function copyToClipboard(text) { /* ... */ }
+      function copyToClipboard(text) {
+        if (!text) return;
+        navigator.clipboard.writeText(text).then(() => {
+          showToast('User ID copied to clipboard!');
+        }).catch(err => {
+          showToast('Failed to copy ID.', 'error');
+        });
+      }
 
       async function handleFileUpload(file) {
           if (!file) return;
+
           uploadResultEl.innerHTML = `<p class="text-sm text-indigo-600">Reading file...</p>`;
+          
           const reader = new FileReader();
           reader.onload = async (e) => {
               try {
@@ -303,6 +430,12 @@
                   
                   const result = await uploadFileApi({ allData: allDataJson, mixData: mixJson });
                   
+                  // --- แก้ไขส่วนนี้ ---
+                  // เพิ่มการตรวจสอบว่า result มีค่าหรือไม่ก่อนใช้งาน
+                  if (!result) {
+                      throw new Error("Received an empty or invalid response from the server.");
+                  }
+
                   uploadResultEl.innerHTML = `
                     <div class="p-4 bg-green-50 text-green-800 rounded-lg">
                         <p class="font-semibold">Upload Complete!</p>
@@ -326,7 +459,11 @@
       modalBackdrop.addEventListener('click', closeModal);
       configForm.addEventListener('submit', handleFormSubmit);
       document.getElementById('reload-data-btn').addEventListener('click', () => initializeApp(true));
-      navButtons.forEach(btn => btn.addEventListener('click', () => switchPage(btn.dataset.page)));
+
+      navButtons.forEach(btn => {
+          btn.addEventListener('click', () => switchPage(btn.dataset.page));
+      });
+
       uploadBtn.addEventListener('click', () => fileInput.click());
       fileInput.addEventListener('change', (e) => {
           const file = e.target.files[0];
@@ -335,8 +472,32 @@
               handleFileUpload(file);
           }
       });
-      document.body.addEventListener('click', (e) => { /* ... */ });
-      function detectMixedContent(baseUrl) { /* ... */ }
+      
+      document.body.addEventListener('click', (e) => {
+        const copyBtn = e.target.closest('.copy-uid-btn');
+        if (copyBtn) {
+          copyToClipboard(copyBtn.dataset.uid);
+          return;
+        }
+
+        const editBtn = e.target.closest('.edit-config-btn');
+        if (editBtn) {
+          try {
+            const config = JSON.parse(editBtn.dataset.config);
+            openModal(config);
+          } catch(err) {
+            showToast('Could not open config for editing.', 'error');
+          }
+        }
+      });
+      
+      function detectMixedContent(baseUrl) {
+        try {
+            const pageIsHTTPS = window.location.protocol === 'https:';
+            const apiIsHTTP = new URL(baseUrl).protocol === 'http:';
+            return pageIsHTTPS && apiIsHTTP;
+        } catch (e) { return false; }
+      }
 
       // --- INITIALIZATION ---
       async function initializeApp(fullReload = true) {
@@ -350,16 +511,23 @@
             mainContent.classList.add('hidden');
             errorDisplay.classList.add('hidden');
             setConnectionStatus('checking', 'Connecting...');
-            if (detectMixedContent(baseUrl)) { /* ... */ return; }
+            if (detectMixedContent(baseUrl)) {
+                loadingSpinner.style.display = 'none';
+                errorDisplay.innerHTML = `<h3 class="font-bold text-red-700">Mixed Content Error</h3><p class="text-red-600 mt-1">This page is secure (HTTPS), but the API URL is not (HTTP). Modern browsers block this for security. Please use an HTTPS URL for your backend.</p>`;
+                errorDisplay.classList.remove('hidden');
+                setConnectionStatus('error', 'Mixed Content');
+                return;
+            }
 
             try {
               await pingHealth();
               setConnectionStatus('ok', 'Connected');
               mainContent.classList.remove('hidden');
             } catch (error) {
-              errorDisplay.innerHTML = `...`;
+              errorDisplay.innerHTML = `<h3 class="font-bold text-red-700">Failed to Load Data</h3><p class="text-red-600 mt-1">Could not connect to the backend at <strong>${baseUrl}</strong>. Please ensure the server is running, the URL is correct, and CORS is configured properly.</p>`;
               errorDisplay.classList.remove('hidden');
               setConnectionStatus('error', 'Connection Failed');
+              loadingSpinner.style.display = 'none';
               return;
             } finally {
               loadingSpinner.style.display = 'none';
