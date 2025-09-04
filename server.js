@@ -8,12 +8,20 @@ const connectDB = require('./services/mongo');
 const logger = require('./services/logger');
 const { middleware } = require('./services/lineService');
 const { webhookHandler } = require('./controllers/webhook.controller');
-// --- แก้ไขส่วนนี้: ลบ createConfig ออกจาก import ---
-const { getConfigs, updateConfig, getUsers, getLogs, handleFileUpload, getDashboardSummary } = require('./controllers/config.controller');
+const { 
+    getConfigs, 
+    updateConfig, 
+    getUsers, 
+    getLogs, 
+    handleFileUpload, 
+    getDashboardSummary,
+    getUploadBatches,
+    deleteUploadBatch
+} = require('./controllers/config.controller');
 
 const app = express();
 
-// --- การตั้งค่า CORS (เวอร์ชันล่าสุด) ---
+// --- การตั้งค่า CORS ---
 const allowedOrigins = [
     'http://localhost:8000',
     /\.googleusercontent\.goog$/i,
@@ -39,7 +47,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
-// เพิ่มขนาด request body limit สำหรับรองรับไฟล์ใหญ่
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
@@ -54,8 +61,11 @@ app.put('/api/configs/:id', updateConfig);
 app.get('/api/logs', getLogs);
 app.post('/api/upload', handleFileUpload);
 app.get('/api/dashboard-summary', getDashboardSummary);
-// --- แก้ไขส่วนนี้: ลบบรรทัดที่เรียกใช้ createConfig ที่ไม่จำเป็นแล้ว ---
-// app.post('/api/configs', createConfig); // <-- ลบบรรทัดนี้ทิ้ง
+
+// Routes for managing Upload Batches
+app.get('/api/uploads', getUploadBatches);
+app.delete('/api/uploads/:id', deleteUploadBatch);
+
 
 // --- เริ่มการทำงานของเซิร์ฟเวอร์ ---
 if (process.env.NODE_ENV === 'production') {
@@ -64,25 +74,19 @@ if (process.env.NODE_ENV === 'production') {
         logger.info(`✅ เซิร์ฟเวอร์กำลังทำงานในโหมด Production บน Port ${PORT}`);
     });
 } else {
+    // Local development logic...
     const httpsPort = 3443;
     const privateKeyPath = './localhost-key.pem';
     const certificatePath = './localhost.pem';
-
     try {
         if (fs.existsSync(privateKeyPath) && fs.existsSync(certificatePath)) {
             const privateKey = fs.readFileSync(privateKeyPath, 'utf8');
             const certificate = fs.readFileSync(certificatePath, 'utf8');
             const credentials = { key: privateKey, cert: certificate };
-
-            https.createServer(credentials, app).listen(httpsPort, () => {
-                logger.info(`✅ เซิร์ฟเวอร์ HTTPS สำหรับทดสอบกำลังทำงานที่ https://localhost:${httpsPort}`);
-            });
+            https.createServer(credentials, app).listen(httpsPort, () => logger.info(`✅ เซิร์ฟเวอร์ HTTPS สำหรับทดสอบกำลังทำงานที่ https://localhost:${httpsPort}`));
         } else {
-            logger.warn('ไม่พบไฟล์ SSL certificate, เปลี่ยนไปใช้ HTTP สำหรับการทดสอบ');
             const PORT = process.env.PORT || 3000;
-            app.listen(PORT, () => {
-                logger.info(`เซิร์ฟเวอร์กำลังทำงานแบบไม่ปลอดภัย (HTTP) ที่ http://localhost:${PORT}`);
-            });
+            app.listen(PORT, () => logger.info(`เซิร์ฟเวอร์กำลังทำงานแบบไม่ปลอดภัย (HTTP) ที่ http://localhost:${PORT}`));
         }
     } catch (err) {
         logger.error('❌ ไม่สามารถเริ่มเซิร์ฟเวอร์ HTTPS ได้:', err.message);
