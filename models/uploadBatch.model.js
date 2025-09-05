@@ -11,3 +11,4 @@ const uploadBatchSchema = new mongoose.Schema({
 const UploadBatch = mongoose.model('UploadBatch', uploadBatchSchema);
 
 module.exports = UploadBatch;
+

@@ -12,11 +12,12 @@ const {
     getConfigs, 
     updateConfig, 
     getUsers, 
-    getLogs, 
+    // getLogs is removed as it's not used in the new UI
     handleFileUpload, 
     getDashboardSummary,
     getUploadBatches,
-    deleteUploadBatch
+    deleteUploadBatch,
+    sendBatchReport // New function for manual sending
 } = require('./controllers/config.controller');
 
 const app = express();
@@ -47,6 +48,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
+// เพิ่มขนาด request body limit สำหรับรองรับไฟล์ใหญ่
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
@@ -58,13 +60,13 @@ app.post('/webhook', middleware, webhookHandler);
 app.get('/api/users', getUsers);
 app.get('/api/configs', getConfigs);
 app.put('/api/configs/:id', updateConfig);
-app.get('/api/logs', getLogs);
 app.post('/api/upload', handleFileUpload);
 app.get('/api/dashboard-summary', getDashboardSummary);
 
 // Routes for managing Upload Batches
 app.get('/api/uploads', getUploadBatches);
 app.delete('/api/uploads/:id', deleteUploadBatch);
+app.post('/api/uploads/:id/send', sendBatchReport); // New Route for manual sending
 
 
 // --- เริ่มการทำงานของเซิร์ฟเวอร์ ---
@@ -74,7 +76,7 @@ if (process.env.NODE_ENV === 'production') {
         logger.info(`✅ เซิร์ฟเวอร์กำลังทำงานในโหมด Production บน Port ${PORT}`);
     });
 } else {
-    // Local development logic...
+    // Local development logic
     const httpsPort = 3443;
     const privateKeyPath = './localhost-key.pem';
     const certificatePath = './localhost.pem';
