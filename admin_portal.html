@@ -1,502 +1,114 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NILA Solutions - Admin Portal</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    body { 
-      font-family: 'Inter', sans-serif; 
-      background-color: #111827; /* gray-900 */
-      color: #D1D5DB; /* gray-300 */
-    }
-    .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(17, 24, 39, 0.8); z-index: 40; opacity: 0; transition: opacity 0.3s; }
-    .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.95); z-index: 50; opacity: 0; transition: opacity 0.3s, transform 0.3s; }
-    .modal-backdrop.show, .modal.show { display: block; opacity: 1; }
-    .modal.show { transform: translate(-50%, -50%) scale(1); }
-    .toast { position: fixed; bottom: 20px; right: 20px; padding: 1rem 1.5rem; border-radius: 0.5rem; color: #fff; opacity: 0; transition: opacity 0.3s, transform 0.3s; transform: translateY(20px); z-index: 100; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
-    .toast.show { opacity: 1; transform: translateY(0); }
-    .toast.success { background-color: #10B981; }
-    .toast.error { background-color: #EF4444; }
-    .nav-btn.active { 
-        background-image: linear-gradient(to right, #4338ca, #1e40af);
-        color: #FFFFFF;
-        border-bottom-color: transparent;
-    }
-    .btn-primary {
-        background-image: linear-gradient(to right, #4f46e5, #2563eb);
-        transition: all 0.3s ease;
-        border: none;
-    }
-    .btn-primary:hover {
-        box-shadow: 0 0 20px rgba(79, 70, 229, 0.6);
-    }
-    .card {
-        background-color: #1F2937; /* gray-800 */
-        border: 1px solid #374151; /* gray-700 */
-    }
-    input, textarea, select {
-        background-color: #374151; /* gray-700 */
-        border-color: #4B5563; /* gray-600 */
-        color: #F3F4F6; /* gray-100 */
-    }
-    input:focus, textarea:focus, select:focus {
-        --tw-ring-color: #4f46e5;
-        border-color: #4f46e5;
-    }
-    table {
-        border-collapse: separate;
-        border-spacing: 0;
-    }
-    th, td {
-        border-bottom: 1px solid #374151;
-    }
-    thead th {
-        border-bottom-width: 2px;
-        border-color: #4B5563;
-    }
-    ::-webkit-calendar-picker-indicator {
-        filter: invert(1);
-    }
-  </style>
-</head>
-<body class="text-gray-300">
+users.forEach(user => {
+const userCard = `<div class="p-3 bg-gray-700/50 rounded-lg border border-gray-600"><p class="font-semibold text-white">${user.displayName || '-'}</p><div class="flex items-center justify-between mt-1"><p class="text-xs text-gray-400 break-all">${user.userId}</p><button class="copy-uid-btn ml-2 text-indigo-400 hover:text-indigo-300" data-uid="${user.userId}" title="Copy ID">Copy</button></div></div>`;
+El.userList.insertAdjacentHTML('beforeend', userCard);
+});
+}
 
-  <div class="container mx-auto p-4 md:p-8 max-w-7xl">
-    <header class="mb-8 flex items-center justify-between">
-      <div class="flex items-center space-x-4">
-          <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAE8AEwDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD2aiquoalZ6Varcahcx20LusaPKwUFmOAMnjJJAHvTLvVNPsklkvL62t0iJEjSyrGEIGSCSeMA5oAs0VFFcQTW6XEU0ckEiCRJFcFWUjIII6gjvTd9vLbFlkhkhcEFgQVYeuehoAmorPuNZ0m1kMc+p2cTqcFXuEBB+uadLrWlQPGk2p2cbSjKEYzKDIOmRzyPcUaAaFFZ99rWlaaqtqGpWlopOB586x5P/AiKL3WtK00I2oanaWgkx5ZuJ1j3Z6YyRmgDQorPuNa0m1jWS41OzijeMSqz3CAFCcBgSehPAz1NNuNd0e0lkhutVsYJIQDKkk6qYwTgbgTxk8c0AaVFUZtX0y3uEt59QtIp3xtieZVZs9MAkE5pr6zpEfm+ZqdlH5DFJd1wimNh1DAnjHuKAL9FUY9X0yWeOCLULSSaVPMjRJlZnX+8ACSR71coAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACsfxPql5pWk+dYWjXM8jiNdqM4QHq5VfmYAdhk/TrWxRQB4Z408f614XtrC3sp5r65u0aUTzQK62yqV+b5VAJO44yD0/ADsPDvjG3sPAVnqnibWI5JJQ4M8nyGZtxA2ouM8DoB0FejUUAfO3izxhP4v8AGWlwW1pfaTZW8wzFcQmJpX3gl9rDkYAGfTFdl4w8d3vhnxhBZx28l1ZjT1ubiCKHc0zFnGFwDyQBgc8n0r1OigD5t0XxhN4J8ZatNeWV9qllPMCYreIyNEu8kqgGeMHHHrXpHh3x23irxhf22l2Vwmk2lqkhu7mFoWkkyBtVXAbHJJyBzj3r0iigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA//Z" alt="Nila Solutions Logo" class="h-12">
-          <div>
-               <h1 class="text-2xl font-bold text-white">NILA SOLUTIONS</h1>
-               <p class="text-gray-400 text-sm mt-1">Weighbridge Admin Portal</p>
-          </div>
-      </div>
-    </header>
 
-    <div class="mb-6 p-4 card rounded-lg">
-      <label for="api-url" class="block text-sm font-medium text-gray-400">Backend API URL:</label>
-      <div class="mt-2 flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4">
-        <input type="text" id="api-url" class="flex-grow w-full px-3 py-2 rounded-md shadow-sm focus:outline-none focus:ring-2">
-        <div id="connection-status" class="px-3 py-1 text-xs font-medium rounded-full whitespace-nowrap"></div>
-        <button id="reload-data-btn" class="w-full sm:w-auto text-white px-4 py-2 rounded-lg btn-primary">Connect & Reload</button>
-      </div>
-    </div>
+function renderConfigs(configs = []) {
+El.configList.innerHTML = '';
+if (!configs.length) { El.configList.innerHTML = `<p class=\"text-sm text-gray-400 text-center py-4\">No companies found. Upload an Excel file with a 'Mix' sheet to get started.</p>`; return; }
+configs.forEach(config => {
+const uuidsHtml = (config.uuids || []).map(uid => `<li class=\"text-xs bg-gray-700 p-1 rounded font-mono break-all\">${uid}</li>`).join('');
+const configCard = `<div class=\"border border-gray-700 rounded-lg p-4\"><div class=\"flex justify-between items-start\"><div><h4 class=\"font-bold text-lg text-white\">${config.companyId}</h4></div><button class=\"edit-config-btn bg-gray-700/50 text-gray-300 px-3 py-1 rounded hover:bg-gray-600\" data-config='${JSON.stringify(config)}'>Edit</button></div><div class=\"mt-3\"><p class=\"text-sm font-medium text-gray-400\">Notified Users:</p><ul class=\"space-y-1 mt-1\">${uuidsHtml || '<li class=\"text-xs text-gray-500\">No users assigned.</li>'}</ul></div></div>`;
+El.configList.insertAdjacentHTML('beforeend', configCard);
+});
+}
 
-    <nav class="mb-6 card rounded-lg">
-      <div class="flex border-b border-gray-700">
-        <button data-page="dashboard-page" class="nav-btn p-4 font-medium text-gray-400 hover:text-white border-b-2 border-transparent transition rounded-tl-lg">Dashboard</button>
-        <button data-page="uploads-page" class="nav-btn p-4 font-medium text-gray-400 hover:text-white border-b-2 border-transparent transition">Uploads & Send</button>
-        <button data-page="configs-page" class="nav-btn p-4 font-medium text-gray-400 hover:text-white border-b-2 border-transparent transition">Configurations</button>
-        <button data-page="friends-page" class="nav-btn p-4 font-medium text-gray-400 hover:text-white border-b-2 border-transparent transition rounded-tr-lg">LINE Friends</button>
-      </div>
-    </nav>
-    
-    <div id="loading-spinner" class="text-center p-8">
-      <svg class="animate-spin h-8 w-8 text-indigo-400 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-      <p class="mt-2 text-gray-400">Loading data...</p>
-    </div>
 
-    <div id="error-display" class="hidden p-6 bg-red-900/20 border border-red-500/30 rounded-lg text-center"></div>
+function renderDashboard(summary = {}) {
+const { buySummary = [], sellSummary = [] } = summary;
+El.buySummary.innerHTML = ''; El.sellSummary.innerHTML = '';
+if (!buySummary.length) El.buySummary.innerHTML = `<p class=\"text-sm text-gray-400\">No BUY data available for this period.</p>`; else buySummary.forEach(item => { const t = item.totalWeight / 1000; const html = `<div class=\"flex justify-between items-center text-sm\"><span class=\"text-gray-300\">${item.product}</span><span class=\"font-semibold text-white\">${t.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})} ตัน</span></div>`; El.buySummary.insertAdjacentHTML('beforeend', html); });
+if (!sellSummary.length) El.sellSummary.innerHTML = `<p class=\"text-sm text-gray-400\">No SELL data available for this period.</p>`; else sellSummary.forEach(item => { const t = item.totalWeight / 1000; const html = `<div class=\"flex justify-between items-center text-sm\"><span class=\"text-gray-300\">${item.product}</span><span class=\"font-semibold text-white\">${t.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})} ตัน</span></div>`; El.sellSummary.insertAdjacentHTML('beforeend', html); });
+}
 
-    <main id="main-content" class="hidden">
-        
-        <div id="dashboard-page" class="page-content hidden">
-            <div class="card p-6 rounded-lg mb-6 flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
-                <div class="flex-1 w-full">
-                    <label for="date-from" class="block text-sm font-medium text-gray-400">From Date</label>
-                    <input type="date" id="date-from" class="mt-1 block w-full px-3 py-2 rounded-md shadow-sm">
-                </div>
-                <div class="flex-1 w-full">
-                    <label for="date-to" class="block text-sm font-medium text-gray-400">To Date</label>
-                    <input type="date" id="date-to" class="mt-1 block w-full px-3 py-2 rounded-md shadow-sm">
-                </div>
-                <button id="refresh-dashboard-btn" class="w-full md:w-auto text-white px-5 py-2.5 rounded-lg btn-primary self-end">แสดงผล</button>
-            </div>
-            <div id="dashboard-content" class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="card p-6 rounded-lg"><h2 class="text-xl font-semibold mb-4 text-white">สรุปยอดซื้อ (BUY)</h2><div id="buy-summary" class="space-y-2"></div></div>
-                <div class="card p-6 rounded-lg"><h2 class="text-xl font-semibold mb-4 text-white">สรุปยอดขาย (SELL)</h2><div id="sell-summary" class="space-y-2"></div></div>
-            </div>
-        </div>
 
-        <div id="uploads-page" class="page-content hidden">
-            <div class="card p-6 rounded-lg">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
-                    <div><h2 class="text-xl font-semibold text-white">Data Uploads</h2><p class="text-sm text-gray-400 mt-1">อัปโหลดไฟล์ใหม่, ส่งรีพอร์ต, หรือจัดการชุดข้อมูลเก่าที่นี่</p></div>
-                    <div class="mt-4 md:mt-0"><input type="file" id="file-input" class="hidden" accept=".xlsx"><button id="upload-btn" class="w-full md:w-auto text-white px-5 py-2.5 rounded-lg btn-primary">Upload New File</button></div>
-                </div>
-                <div id="upload-result" class="my-4"></div>
-                <div class="max-h-[60vh] overflow-y-auto"><table class="min-w-full"><thead class="bg-gray-700/50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Uploaded At</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">File Name</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Rows</th><th class="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th></tr></thead><tbody id="batch-list" class="bg-gray-800"></tbody></table></div>
-            </div>
-        </div>
-        
-        <div id="configs-page" class="page-content hidden">
-            <div class="card p-6 rounded-lg">
-                <h2 class="text-xl font-semibold text-white mb-4">Notification Configurations</h2>
-                <p class="text-sm text-gray-400 mb-4">ผูกบัญชี LINE กับบริษัทลูกค้าที่นี่ รายชื่อบริษัทจะถูกเพิ่มอัตโนมัติเมื่อคุณอัปโหลดไฟล์ Excel ที่มีชีท 'Mix'</p>
-                <div id="config-list" class="space-y-4 max-h-[70vh] overflow-y-auto pr-2"></div>
-            </div>
-        </div>
+function renderBatches(batches = []) {
+El.batchList.innerHTML = '';
+if (!batches.length) { El.batchList.innerHTML = `<tr><td colspan=\"4\" class=\"text-center py-4 text-sm text-gray-400\">No files have been uploaded yet.</td></tr>`; return; }
+batches.forEach(batch => {
+const row = `
+<tr>
+<td class=\"px-6 py-4 whitespace-nowrap text-sm text-gray-400\">${new Date(batch.uploadedAt).toLocaleString()}</td>
+<td class=\"px-6 py-4 whitespace-nowrap text-sm font-medium text-white\">${batch.fileName}</td>
+<td class=\"px-6 py-4 whitespace-nowrap text-sm text-gray-400\">${batch.rowCount}</td>
+<td class=\"px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2\">
+<button class=\"send-batch-btn text-white px-3 py-1 rounded-md text-sm btn-primary\" data-id=\"${batch._id}\">Send</button>
+<button class=\"delete-batch-btn text-red-400 hover:text-red-300\" data-id=\"${batch._id}\" data-name=\"${batch.fileName}\">Delete</button>
+</td>
+</tr>`;
+El.batchList.insertAdjacentHTML('beforeend', row);
+});
+}
 
-        <div id="friends-page" class="page-content hidden">
-            <div class="card p-6 rounded-lg">
-              <h2 class="text-xl font-semibold mb-4 text-white">LINE OA Friends</h2>
-              <p class="text-sm text-gray-400 mb-4">รายชื่อผู้ใช้ทั้งหมดที่เพิ่มเพื่อน LINE OA ของเรา</p>
-              <div id="user-list" class="space-y-3 max-h-[70vh] overflow-y-auto pr-2"></div>
-            </div>
-        </div>
-        
-    </main>
-  </div>
 
-  <div id="modal-backdrop" class="modal-backdrop"></div>
-  <div id="config-modal" class="modal card w-11/12 md:max-w-lg mx-auto rounded-lg shadow-xl">
-    <div class="p-6">
-      <h3 class="text-2xl font-bold mb-4 text-white">Edit Configuration</h3>
-      <form id="config-form">
-        <input type="hidden" id="config-id">
-        <div class="mb-4">
-          <label for="companyId" class="block text-sm font-medium text-gray-400">Company ID</label>
-          <input type="text" id="companyId" name="companyId" readonly class="mt-1 block w-full px-3 py-2 rounded-md shadow-sm bg-gray-600">
-        </div>
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-400">LINE User IDs to Notify (one per line)</label>
-          <textarea id="uuids" name="uuids" rows="4" class="mt-1 block w-full px-3 py-2 rounded-md shadow-sm"></textarea>
-           <p class="mt-1 text-xs text-gray-500">คัดลอกจากหน้า "LINE Friends".</p>
-        </div>
-        <div class="flex justify-end space-x-3">
-          <button type="button" id="cancel-btn" class="bg-gray-600 text-gray-200 px-4 py-2 rounded-lg hover:bg-gray-500 transition">Cancel</button>
-          <button type="submit" class="text-white px-4 py-2 rounded-lg btn-primary">Save Configuration</button>
-        </div>
-      </form>
-    </div>
-  </div>
+function switchPage(pageId) {
+El.pageContents.forEach(p => p.classList.add('hidden'));
+document.getElementById(pageId).classList.remove('hidden');
+El.navButtons.forEach(btn => btn.classList.remove('active'));
+document.querySelector(`.nav-btn[data-page="${pageId}"]`).classList.add('active');
+localStorage.setItem('nila:lastPage', pageId);
+if (pageId === 'dashboard-page') El.refreshDashboardBtn.click();
+else if (pageId === 'configs-page') API.fetchConfigs().then(c => { state.configs = c; renderConfigs(c); });
+else if (pageId === 'friends-page') API.fetchUsers().then(u => { state.users = u; renderUsers(u); });
+else if (pageId === 'uploads-page') API.fetchBatches().then(b => { state.batches = b; renderBatches(b); });
+}
 
-  <div id="toast" class="toast"></div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const state = { users: [], configs: [], batches: [], summary: {} };
+function openModal(config = null) {
+El.configForm.reset();
+if (config) {
+document.getElementById('modal-title').textContent = 'Edit Configuration';
+El.configIdInput.value = config._id;
+document.getElementById('companyId').value = config.companyId;
+document.getElementById('uuids').value = (config.uuids || []).join('\n');
+} else return;
+El.modal.classList.add('show'); El.modalBackdrop.classList.add('show');
+}
+function closeModal() { El.modal.classList.remove('show'); El.modalBackdrop.classList.remove('show'); }
 
-      const El = {
-        apiUrlInput: document.getElementById('api-url'),
-        loadingSpinner: document.getElementById('loading-spinner'),
-        mainContent: document.getElementById('main-content'),
-        errorDisplay: document.getElementById('error-display'),
-        connectionStatus: document.getElementById('connection-status'),
-        navButtons: document.querySelectorAll('.nav-btn'),
-        pageContents: document.querySelectorAll('.page-content'),
-        dateFrom: document.getElementById('date-from'),
-        dateTo: document.getElementById('date-to'),
-        refreshDashboardBtn: document.getElementById('refresh-dashboard-btn'),
-        userList: document.getElementById('user-list'),
-        configList: document.getElementById('config-list'),
-        buySummary: document.getElementById('buy-summary'),
-        sellSummary: document.getElementById('sell-summary'),
-        batchList: document.getElementById('batch-list'),
-        uploadBtn: document.getElementById('upload-btn'),
-        fileInput: document.getElementById('file-input'),
-        uploadResult: document.getElementById('upload-result'),
-        modal: document.getElementById('config-modal'),
-        modalBackdrop: document.getElementById('modal-backdrop'),
-        configForm: document.getElementById('config-form'),
-        configIdInput: document.getElementById('config-id'),
-        cancelBtn: document.getElementById('cancel-btn'),
-        reloadDataBtn: document.getElementById('reload-data-btn'),
-      };
 
-      const getApiBaseUrl = () => El.apiUrlInput.value.trim().replace(/\/+$/, '');
-      const joinUrl = (base, path) => `${base}${path.startsWith('/') ? '' : '/'}${path}`;
-      function showToast(message, type = 'success', duration = 3000) {
-          const toast = document.getElementById('toast');
-          toast.textContent = message;
-          toast.className = `toast show ${type}`;
-          setTimeout(() => toast.classList.remove('show'), duration);
-      }
-      function setConnectionStatus(status, text) {
-          connectionStatus.className = 'px-3 py-1 text-xs font-medium rounded-full whitespace-nowrap ';
-          if (status === 'ok') connectionStatus.className += 'bg-green-100/10 text-green-300';
-          else if (status === 'error') connectionStatus.className += 'bg-red-100/10 text-red-300';
-          else connectionStatus.className += 'bg-yellow-100/10 text-yellow-300';
-          connectionStatus.textContent = text;
-      }
-      
-      async function apiCall(url, options = {}) {
-        try {
-          const response = await fetch(url, { ...options, mode: 'cors' });
-          if (!response.ok) {
-            let errorMsg = `Error: ${response.statusText}`;
-            try {
-              const errorData = await response.json();
-              errorMsg = errorData.message || JSON.stringify(errorData);
-            } catch (e) { /* Not a JSON error */ }
-            throw new Error(errorMsg);
-          }
-          if (response.status === 204) return null;
-          return response.json();
-        } catch (error) {
-          console.error('API Call failed:', error);
-          showToast(`API Error: ${error.message}`, 'error', 5000);
-          throw error;
-        }
-      }
+async function handleFormSubmit(e) {
+e.preventDefault(); const id = El.configIdInput.value; const payload = { uuids: document.getElementById('uuids').value.split('\n').map(s => s.trim()).filter(Boolean) };
+try { await API.updateConfig(id, payload); showToast('Configuration updated successfully!'); closeModal(); API.fetchConfigs().then(c => { state.configs = c; renderConfigs(c); }); } catch (_) {}
+}
 
-      const API = {
-        fetchUsers: () => apiCall(joinUrl(getApiBaseUrl(), '/api/users')),
-        fetchConfigs: () => apiCall(joinUrl(getApiBaseUrl(), '/api/configs')),
-        fetchBatches: () => apiCall(joinUrl(getApiBaseUrl(), '/api/uploads')),
-        fetchDashboardSummary: (startDate, endDate) => apiCall(joinUrl(getApiBaseUrl(), `/api/dashboard-summary?startDate=${startDate}&endDate=${endDate}`)),
-        updateConfig: (id, data) => apiCall(joinUrl(getApiBaseUrl(), `/api/configs/${id}`), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }),
-        uploadFile: (fileData, fileName) => apiCall(joinUrl(getApiBaseUrl(), '/api/upload'), { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ fileData, fileName }) }),
-        deleteBatch: (id) => apiCall(joinUrl(getApiBaseUrl(), `/api/uploads/${id}`), { method: 'DELETE' }),
-        sendBatchReport: (id) => apiCall(joinUrl(getApiBaseUrl(), `/api/uploads/${id}/send`), { method: 'POST' }),
-        pingHealth: () => apiCall(joinUrl(getApiBaseUrl(), '/api/health')),
-      };
 
-      function renderUsers(users = []) {
-        El.userList.innerHTML = '';
-        if (users.length === 0) { El.userList.innerHTML = `<p class="text-sm text-gray-400">No users have added the LINE OA yet.</p>`; return; }
-        users.forEach(user => {
-          const userCard = `<div class="p-3 bg-gray-700/50 rounded-lg border border-gray-600"><p class="font-semibold text-white">${user.displayName}</p><div class="flex items-center justify-between mt-1"><p class="text-xs text-gray-400 break-all">${user.userId}</p><button class="copy-uid-btn ml-2 text-indigo-400 hover:text-indigo-300" data-uid="${user.userId}" title="Copy ID"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/></svg></button></div></div>`;
-          El.userList.insertAdjacentHTML('beforeend', userCard);
-        });
-      }
+function copyToClipboard(text) { if (!text) return; navigator.clipboard.writeText(text).then(() => showToast('User ID copied to clipboard!')).catch(() => showToast('Failed to copy ID.', 'error')); }
 
-      function renderConfigs(configs = []) {
-        El.configList.innerHTML = '';
-        if (configs.length === 0) { El.configList.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">No companies found. Upload an Excel file with a 'Mix' sheet to get started.</p>`; return; }
-        configs.forEach(config => {
-          const uuidsHtml = (config.uuids || []).map(uid => `<li class="text-xs bg-gray-700 p-1 rounded font-mono break-all">${uid}</li>`).join('');
-          const configCard = `<div class="border border-gray-700 rounded-lg p-4"><div class="flex justify-between items-start"><div><h4 class="font-bold text-lg text-white">${config.companyId}</h4></div><button class="edit-config-btn bg-gray-700/50 text-gray-300 px-3 py-1 rounded hover:bg-gray-600" data-config='${JSON.stringify(config)}'>Edit</button></div><div class="mt-3"><p class="text-sm font-medium text-gray-400">Notified Users:</p><ul class="space-y-1 mt-1">${uuidsHtml || '<li class="text-xs text-gray-500">No users assigned.</li>'}</ul></div></div>`;
-          El.configList.insertAdjacentHTML('beforeend', configCard);
-        });
-      }
-      
-      function renderDashboard(summary = {}) {
-          const { buySummary = [], sellSummary = [] } = summary;
-          El.buySummary.innerHTML = '';
-          El.sellSummary.innerHTML = '';
-          if (buySummary.length === 0) El.buySummary.innerHTML = `<p class="text-sm text-gray-400">No BUY data available for this period.</p>`;
-          else {
-              buySummary.forEach(item => {
-                  const weightInTonnes = item.totalWeight / 1000;
-                  const itemEl = `<div class="flex justify-between items-center text-sm"><span class="text-gray-300">${item.product}</span><span class="font-semibold text-white">${weightInTonnes.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ตัน</span></div>`;
-                  El.buySummary.insertAdjacentHTML('beforeend', itemEl);
-              });
-          }
-          if (sellSummary.length === 0) El.sellSummary.innerHTML = `<p class="text-sm text-gray-400">No SELL data available for this period.</p>`;
-          else {
-              sellSummary.forEach(item => {
-                  const weightInTonnes = item.totalWeight / 1000;
-                  const itemEl = `<div class="flex justify-between items-center text-sm"><span class="text-gray-300">${item.product}</span><span class="font-semibold text-white">${weightInTonnes.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ตัน</span></div>`;
-                  El.sellSummary.insertAdjacentHTML('beforeend', itemEl);
-              });
-          }
-      }
 
-      function renderBatches(batches = []) {
-          El.batchList.innerHTML = '';
-          if (batches.length === 0) {
-              El.batchList.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-sm text-gray-400">No files have been uploaded yet.</td></tr>`;
-              return;
-          }
-          batches.forEach(batch => {
-              const row = `
-                <tr>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">${new Date(batch.uploadedAt).toLocaleString()}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">${batch.fileName}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">${batch.rowCount}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                        <button class="send-batch-btn text-white px-3 py-1 rounded-md text-sm btn-primary" data-id="${batch._id}">Send</button>
-                        <button class="delete-batch-btn text-red-400 hover:text-red-300" data-id="${batch._id}" data-name="${batch.fileName}">Delete</button>
-                    </td>
-                </tr>`;
-              El.batchList.insertAdjacentHTML('beforeend', row);
-          });
-      }
+async function handleFileUpload(file) {
+if (!file) return; El.uploadResult.innerHTML = `<p class=\"text-sm text-indigo-400\">Reading file...</p>`; const reader = new FileReader();
+reader.onload = async (e) => {
+try {
+const data = new Uint8Array(e.target.result); const workbook = XLSX.read(data, { type: 'array' });
+const allDataSheet = workbook.Sheets['All_data']; const mixSheet = workbook.Sheets['Mix'];
+if (!allDataSheet || !mixSheet) throw new Error(`Excel file must contain 'All_data' and 'Mix' sheets.`);
+const allDataJson = XLSX.utils.sheet_to_json(allDataSheet); const mixJson = XLSX.utils.sheet_to_json(mixSheet);
+El.uploadResult.innerHTML = `<p class=\"text-sm text-indigo-400\">Processing ${allDataJson.length + mixJson.length} total rows... Please wait.</p>`;
+const result = await API.uploadFile({ allData: allDataJson, mixData: mixJson }, file.name);
+if (!result) throw new Error('Received an empty response from the server.');
+El.uploadResult.innerHTML = `<div class=\"p-4 bg-green-900/20 border border-green-500/30 text-green-300 rounded-lg\"><p class=\"font-semibold\">Upload Complete!</p><p>Companies Updated/Created: ${result.companiesProcessed}</p><p>Data Rows Saved: ${result.dataRowsSaved}</p></div>`;
+API.fetchBatches().then(b => { state.batches = b; renderBatches(b); });
+} catch (error) { El.uploadResult.innerHTML = `<div class=\"p-4 bg-red-900/20 border border-red-500/30 text-red-300 rounded-lg\"><p class=\"font-semibold\">Upload Failed</p><p>${error.message}</p></div>`; }
+};
+reader.readAsArrayBuffer(file);
+}
 
-      function switchPage(pageId) {
-          El.pageContents.forEach(page => page.classList.add('hidden'));
-          document.getElementById(pageId).classList.remove('hidden');
-          El.navButtons.forEach(btn => btn.classList.remove('active'));
-          document.querySelector(`.nav-btn[data-page="${pageId}"]`).classList.add('active');
-          
-          if (pageId === 'dashboard-page') El.refreshDashboardBtn.click();
-          else if (pageId === 'configs-page') API.fetchConfigs().then(c => { state.configs = c; renderConfigs(c); });
-          else if (pageId === 'friends-page') API.fetchUsers().then(u => { state.users = u; renderUsers(u); });
-          else if (pageId === 'uploads-page') API.fetchBatches().then(b => { state.batches = b; renderBatches(b); });
-      }
 
-      function openModal(config = null) {
-        El.configForm.reset();
-        if (config) {
-          document.getElementById('modal-title').textContent = 'Edit Configuration';
-          El.configIdInput.value = config._id;
-          document.getElementById('companyId').value = config.companyId;
-          document.getElementById('uuids').value = (config.uuids || []).join('\n');
-        } else return;
-        El.modal.classList.add('show');
-        El.modalBackdrop.classList.add('show');
-      }
-      function closeModal() {
-        El.modal.classList.remove('show');
-        El.modalBackdrop.classList.remove('show');
-      }
+async function handleDeleteBatch(e) {
+const button = e.target.closest('.delete-batch-btn'); if (!button) return; const batchId = button.dataset.id; const name = button.dataset.name;
+if (confirm(`Are you sure you want to delete all data from \"${name}\"? This action cannot be undone.`)) { try { await API.deleteBatch(batchId); showToast('Batch deleted successfully!'); API.fetchBatches().then(b => { state.batches = b; renderBatches(b); }); } catch (_) {} }
+}
+async function handleSendBatch(e) {
+const button = e.target.closest('.send-batch-btn'); if (!button) return; button.textContent = 'Sending...'; button.disabled = true;
+try { const result = await API.sendBatchReport(button.dataset.id); showToast(result.message || 'Reports sent successfully!'); } catch(_) {}
+finally { button.textContent = 'Send'; button.disabled = false; }
+}
 
-      async function handleFormSubmit(e) {
-        e.preventDefault();
-        const id = El.configIdInput.value;
-        const payload = { uuids: document.getElementById('uuids').value.split('\n').map(s => s.trim()).filter(Boolean) };
-        try {
-          await API.updateConfig(id, payload);
-          showToast('Configuration updated successfully!');
-          closeModal();
-          API.fetchConfigs().then(c => { state.configs = c; renderConfigs(c); });
-        } catch (error) {}
-      }
-      
-      function copyToClipboard(text) {
-        if (!text) return;
-        navigator.clipboard.writeText(text).then(() => showToast('User ID copied to clipboard!')).catch(err => showToast('Failed to copy ID.', 'error'));
-      }
 
-      async function handleFileUpload(file) {
-          if (!file) return;
-          El.uploadResult.innerHTML = `<p class="text-sm text-indigo-400">Reading file...</p>`;
-          const reader = new FileReader();
-          reader.onload = async (e) => {
-              try {
-                  const data = new Uint8Array(e.target.result);
-                  const workbook = XLSX.read(data, {type: 'array'});
-                  const allDataSheet = workbook.Sheets['All_data'];
-                  const mixSheet = workbook.Sheets['Mix'];
-                  if (!allDataSheet || !mixSheet) throw new Error(`Excel file must contain 'All_data' and 'Mix' sheets.`);
-                  const allDataJson = XLSX.utils.sheet_to_json(allDataSheet);
-                  const mixJson = XLSX.utils.sheet_to_json(mixSheet);
-                  El.uploadResult.innerHTML = `<p class="text-sm text-indigo-400">Processing ${allDataJson.length + mixJson.length} total rows... Please wait.</p>`;
-                  const result = await API.uploadFile({ allData: allDataJson, mixData: mixJson }, file.name);
-                  if (!result) throw new Error("Received an empty response from the server.");
-                  El.uploadResult.innerHTML = `<div class="p-4 bg-green-900/20 border border-green-500/30 text-green-300 rounded-lg"><p class="font-semibold">Upload Complete!</p><p>Companies Updated/Created: ${result.companiesProcessed}</p><p>Data Rows Saved: ${result.dataRowsSaved}</p></div>`;
-                  API.fetchBatches().then(b => { state.batches = b; renderBatches(b); });
-              } catch (error) {
-                   El.uploadResult.innerHTML = `<div class="p-4 bg-red-900/20 border border-red-500/30 text-red-300 rounded-lg"><p class="font-semibold">Upload Failed</p><p>${error.message}</p></div>`;
-              }
-          };
-          reader.readAsArrayBuffer(file);
-      }
-
-      async function handleDeleteBatch(e) {
-          const button = e.target.closest('.delete-batch-btn');
-          if (!button) return;
-          const batchId = button.dataset.id;
-          const fileName = button.dataset.name;
-          if (confirm(`Are you sure you want to delete all data from "${fileName}"? This action cannot be undone.`)) {
-              try {
-                  await API.deleteBatch(batchId);
-                  showToast('Batch deleted successfully!');
-                  API.fetchBatches().then(b => { state.batches = b; renderBatches(b); });
-              } catch (error) {}
-          }
-      }
-
-      async function handleSendBatch(e) {
-          const button = e.target.closest('.send-batch-btn');
-          if (!button) return;
-          button.textContent = 'Sending...';
-          button.disabled = true;
-          try {
-              const result = await API.sendBatchReport(button.dataset.id);
-              showToast(result.message || 'Reports sent successfully!');
-          } catch(error) { /* error toast shown in apiCall */ } 
-          finally {
-              button.textContent = 'Send';
-              button.disabled = false;
-          }
-      }
-
-      // --- EVENT LISTENERS ---
-      El.cancelBtn.addEventListener('click', closeModal);
-      El.modalBackdrop.addEventListener('click', closeModal);
-      El.configForm.addEventListener('submit', handleFormSubmit);
-      El.reloadDataBtn.addEventListener('click', () => initializeApp(true));
-      El.navButtons.forEach(btn => btn.addEventListener('click', () => switchPage(btn.dataset.page)));
-      El.uploadBtn.addEventListener('click', () => El.fileInput.click());
-      El.fileInput.addEventListener('change', (e) => {
-          const file = e.target.files[0];
-          if (file) {
-            El.uploadResult.innerHTML = '';
-            handleFileUpload(file);
-          }
-      });
-      El.batchList.addEventListener('click', (e) => {
-          handleDeleteBatch(e);
-          handleSendBatch(e);
-      });
-      El.refreshDashboardBtn.addEventListener('click', () => {
-          if (El.dateFrom.value && El.dateTo.value) {
-              API.fetchDashboardSummary(El.dateFrom.value, El.dateTo.value).then(summary => {
-                  state.summary = summary;
-                  renderDashboard(summary);
-              });
-          } else {
-              showToast('Please select both start and end dates.', 'error');
-          }
-      });
-      document.body.addEventListener('click', (e) => {
-        const copyBtn = e.target.closest('.copy-uid-btn');
-        if (copyBtn) { copyToClipboard(copyBtn.dataset.uid); return; }
-        const editBtn = e.target.closest('.edit-config-btn');
-        if (editBtn) {
-          try {
-            const config = JSON.parse(editBtn.dataset.config);
-            openModal(config);
-          } catch(err) { showToast('Could not open config for editing.', 'error'); }
-        }
-      });
-      
-      function detectMixedContent(baseUrl) { /* ... */ }
-
-      async function initializeApp(fullReload = true) {
-        if (fullReload) {
-            const baseUrl = getApiBaseUrl();
-            if (!baseUrl || !baseUrl.startsWith('http')) { showToast('Please enter a valid Backend API URL.', 'error'); return; }
-            loadingSpinner.style.display = 'block';
-            mainContent.classList.add('hidden');
-            errorDisplay.classList.add('hidden');
-            setConnectionStatus('checking', 'Connecting...');
-            if (detectMixedContent(baseUrl)) {
-                loadingSpinner.style.display = 'none';
-                errorDisplay.innerHTML = `<h3 class="font-bold text-red-300">Mixed Content Error</h3><p class="text-red-400 mt-1">This page is secure (HTTPS), but the API URL is not (HTTP). Modern browsers block this for security. Please use an HTTPS URL for your backend.</p>`;
-                errorDisplay.classList.remove('hidden');
-                setConnectionStatus('error', 'Mixed Content');
-                return;
-            }
-            try {
-              await API.pingHealth();
-              setConnectionStatus('ok', 'Connected');
-              mainContent.classList.remove('hidden');
-            } catch (error) {
-              errorDisplay.innerHTML = `<h3 class="font-bold text-red-300">Failed to Load Data</h3><p class="text-red-400 mt-1">Could not connect to the backend at <strong>${baseUrl}</strong>. Please ensure the server is running, the URL is correct, and CORS is configured properly.</p>`;
-              errorDisplay.classList.remove('hidden');
-              setConnectionStatus('error', 'Connection Failed');
-              loadingSpinner.style.display = 'none';
-              return;
-            } finally {
-              loadingSpinner.style.display = 'none';
-            }
-        }
-        const today = new Date().toISOString().split('T')[0];
-        El.dateFrom.value = today;
-        El.dateTo.value = today;
-        switchPage('dashboard-page');
-      }
-      initializeApp();
-    });
-  </script>
-</body>
-</html>
-
+// listeners
+El.cancelBtn.addEventListener('click', closeModal);
+El.m

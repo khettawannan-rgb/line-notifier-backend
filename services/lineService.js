@@ -1,24 +1,11 @@
-const line = require('@line/bot-sdk');
 const logger = require('./logger');
-require('dotenv').config();
-
-const config = {
-    channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN,
-    channelSecret: process.env.LINE_CHANNEL_SECRET,
-};
-
-const client = new line.Client(config);
-
-const notifyAdmin = async (message) => {
-    if (!process.env.ADMIN_LINE_UID) {
-        logger.warn('ADMIN_LINE_UID not set. Cannot send admin notification.');
-        return;
-    }
-    try {
-        await client.pushMessage(process.env.ADMIN_LINE_UID, { type: 'text', text: `[ADMIN ALERT] ${message}` });
-    } catch (error) {
-        logger.error(`Failed to send notification to admin: ${error.message}`);
-    }
-};
-
-module.exports = { client, middleware: line.middleware(config), notifyAdmin };
+const PUSH_URL = 'https://api.line.me/v2/bot/message/push';
+const token = process.env.LINE_CHANNEL_ACCESS_TOKEN || '';
+async function pushMessage(userId, text) {
+if (!userId) return { ok: false, error: 'missing userId' };
+if (!token) { logger.info('LINE dry-run', { userId, text }); return { ok: true, dryRun: true }; }
+const res = await fetch(PUSH_URL, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ to: userId, messages: [{ type: 'text', text }] }) });
+if (!res.ok) { const err = await res.text().catch(()=> ''); logger.error('LINE push error', { status: res.status, err }); return { ok: false, status: res.status, err }; }
+return { ok: true };
+}
+module.exports = { pushMessage };

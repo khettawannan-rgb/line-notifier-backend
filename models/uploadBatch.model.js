@@ -1,14 +1,6 @@
-const mongoose = require('mongoose');
-
-const uploadBatchSchema = new mongoose.Schema({
-    uploadSessionId: { type: String, required: true, unique: true, index: true },
-    fileName: { type: String, required: true },
-    rowCount: { type: Number, required: true },
-    status: { type: String, default: 'Processed' }, // e.g., Processed, Sent
-    uploadedAt: { type: Date, default: Date.now },
-});
-
-const UploadBatch = mongoose.model('UploadBatch', uploadBatchSchema);
-
-module.exports = UploadBatch;
-
+const { Schema: S3, model: M3 } = require('mongoose');
+const uploadBatchSchema = new S3(
+{ fileName: String, rowCount: Number, companiesProcessed: Number, uploadedAt: { type: Date, default: Date.now } },
+{ timestamps: true }
+);
+module.exports = M3('UploadBatch', uploadBatchSchema);

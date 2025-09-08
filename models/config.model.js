@@ -1,11 +1,6 @@
-const mongoose = require('mongoose');
-
-const notificationConfigSchema = new mongoose.Schema({
-    companyId: { type: String, required: true, unique: true, index: true },
-    notify_buy: { type: Boolean, default: true },
-    notify_sell: { type: Boolean, default: true },
-    uuids: [{ type: String }]
-});
-
-const NotificationConfig = mongoose.model('NotificationConfig', notificationConfigSchema);
-module.exports = NotificationConfig;
+const { Schema: S2, model: M2 } = require('mongoose');
+const configSchema = new S2(
+{ companyId: { type: String, index: true, unique: true, required: true }, uuids: { type: [String], default: [] }, meta: { type: Object, default: {} } },
+{ timestamps: true }
+);
+module.exports = M2('Config', configSchema);
